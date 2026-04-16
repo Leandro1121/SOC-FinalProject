@@ -1,0 +1,12 @@
+AES Performance
+----------------
+Software Cycles : 13812624
+Hardware Cycles : 130524
+ISA Cycles      : 847924
+
+Hardware Speedup: 105x
+ISA Speedup     : 16x
+
+GIFT Performance
+----------------
+Software Cycles : 95125124
