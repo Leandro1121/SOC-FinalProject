@@ -41,7 +41,7 @@ uint32_t started = (pong_cmd & START) ? 1u : 0u;
 
 if (started && !prev_start) {
 neorv32_uart0_puts("Pong game START signal active\n");
-} else if (!start_now && prev_start) {
+} else if (!started && prev_start) {
 neorv32_uart0_puts("Game paused\n");
 }
 prev_start = started;
