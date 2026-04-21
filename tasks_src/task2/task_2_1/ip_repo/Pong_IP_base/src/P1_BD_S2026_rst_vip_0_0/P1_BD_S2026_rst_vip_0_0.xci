@@ -1,0 +1,78 @@
+{
+  "schema": "xilinx.com:schema:json_instance:1.0",
+  "ip_inst": {
+    "xci_name": "P1_BD_S2026_rst_vip_0_0",
+    "cell_name": "rst_vip_0",
+    "component_reference": "xilinx.com:ip:rst_vip:1.0",
+    "ip_revision": "8",
+    "gen_directory": "./",
+    "parameters": {
+      "component_parameters": {
+        "Component_Name": [ { "value": "P1_BD_S2026_rst_vip_0_0", "resolve_type": "user", "usage": "all" } ],
+        "INTERFACE_MODE": [ { "value": "PASS_THROUGH", "resolve_type": "user", "usage": "all" } ],
+        "RST_POLARITY": [ { "value": "ACTIVE_HIGH", "value_src": "propagated", "value_permission": "bd_and_user", "resolve_type": "user", "usage": "all" } ],
+        "ASYNCHRONOUS": [ { "value": "YES", "resolve_type": "user", "usage": "all" } ]
+      },
+      "model_parameters": {
+        "C_ASYNCHRONOUS": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "C_RST_POLARITY": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "C_INTERFACE_MODE": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ]
+      },
+      "project_parameters": {
+        "ARCHITECTURE": [ { "value": "spartan7" } ],
+        "BASE_BOARD_PART": [ { "value": "" } ],
+        "BOARD_CONNECTIONS": [ { "value": "" } ],
+        "DEVICE": [ { "value": "xc7s50" } ],
+        "PACKAGE": [ { "value": "csga324" } ],
+        "PREFHDL": [ { "value": "VERILOG" } ],
+        "SILICON_REVISION": [ { "value": "" } ],
+        "SIMULATOR_LANGUAGE": [ { "value": "MIXED" } ],
+        "SPEEDGRADE": [ { "value": "-1" } ],
+        "STATIC_POWER": [ { "value": "" } ],
+        "TEMPERATURE_GRADE": [ { "value": "" } ]
+      },
+      "runtime_parameters": {
+        "IPCONTEXT": [ { "value": "IP_Integrator" } ],
+        "IPREVISION": [ { "value": "8" } ],
+        "MANAGED": [ { "value": "TRUE" } ],
+        "OUTPUTDIR": [ { "value": "./" } ],
+        "SELECTEDSIMMODEL": [ { "value": "" } ],
+        "SHAREDDIR": [ { "value": "." } ],
+        "SWVERSION": [ { "value": "2025.1" } ],
+        "SYNTHESISFLOW": [ { "value": "OUT_OF_CONTEXT" } ]
+      }
+    },
+    "boundary": {
+      "ports": {
+        "rst_in": [ { "direction": "in", "driver_value": "0" } ],
+        "rst_out": [ { "direction": "out" } ]
+      },
+      "interfaces": {
+        "rst_in": {
+          "vlnv": "xilinx.com:signal:reset:1.0",
+          "abstraction_type": "xilinx.com:signal:reset_rtl:1.0",
+          "mode": "slave",
+          "parameters": {
+            "POLARITY": [ { "value": "ACTIVE_HIGH", "value_src": "user_prop", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "INSERT_VIP": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "RST": [ { "physical_name": "rst_in" } ]
+          }
+        },
+        "rst_out": {
+          "vlnv": "xilinx.com:signal:reset:1.0",
+          "abstraction_type": "xilinx.com:signal:reset_rtl:1.0",
+          "mode": "master",
+          "parameters": {
+            "POLARITY": [ { "value": "ACTIVE_HIGH", "value_permission": "bd", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "INSERT_VIP": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "RST": [ { "physical_name": "rst_out" } ]
+          }
+        }
+      }
+    }
+  }
+}

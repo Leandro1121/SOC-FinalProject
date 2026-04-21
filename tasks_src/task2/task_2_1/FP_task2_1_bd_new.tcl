@@ -1,0 +1,546 @@
+
+################################################################
+# This is a generated script based on design: design_1
+#
+# Though there are limitations about the generated script,
+# the main purpose of this utility is to make learning
+# IP Integrator Tcl commands easier.
+################################################################
+
+namespace eval _tcl {
+proc get_script_folder {} {
+   set script_path [file normalize [info script]]
+   set script_folder [file dirname $script_path]
+   return $script_folder
+}
+}
+variable script_folder
+set script_folder [_tcl::get_script_folder]
+
+################################################################
+# Check if script is running in correct Vivado version.
+################################################################
+set scripts_vivado_version 2025.1
+set current_vivado_version [version -short]
+
+if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
+   puts ""
+   if { [string compare $scripts_vivado_version $current_vivado_version] > 0 } {
+      catch {common::send_gid_msg -ssname BD::TCL -id 2042 -severity "ERROR" " This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Sourcing the script failed since it was created with a future version of Vivado."}
+
+   } else {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2041 -severity "ERROR" "This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."}
+
+   }
+
+   return 1
+}
+
+################################################################
+# START
+################################################################
+
+# To test this script, run the following commands from Vivado Tcl console:
+# source design_1_script.tcl
+
+# If there is no project opened, this script will create a
+# project, but make sure you do not have an existing project
+# <./myproj/project_1.xpr> in the current working folder.
+
+set list_projs [get_projects -quiet]
+if { $list_projs eq "" } {
+   create_project project_1 myproj -part xc7s50csga324-1
+}
+
+
+# CHANGE DESIGN NAME HERE
+variable design_name
+set design_name design_1
+
+# If you do not already have an existing IP Integrator design open,
+# you can create a design using the following command:
+#    create_bd_design $design_name
+
+# Creating design if needed
+set errMsg ""
+set nRet 0
+
+set cur_design [current_bd_design -quiet]
+set list_cells [get_bd_cells -quiet]
+
+if { ${design_name} eq "" } {
+   # USE CASES:
+   #    1) Design_name not set
+
+   set errMsg "Please set the variable <design_name> to a non-empty value."
+   set nRet 1
+
+} elseif { ${cur_design} ne "" && ${list_cells} eq "" } {
+   # USE CASES:
+   #    2): Current design opened AND is empty AND names same.
+   #    3): Current design opened AND is empty AND names diff; design_name NOT in project.
+   #    4): Current design opened AND is empty AND names diff; design_name exists in project.
+
+   if { $cur_design ne $design_name } {
+      common::send_gid_msg -ssname BD::TCL -id 2001 -severity "INFO" "Changing value of <design_name> from <$design_name> to <$cur_design> since current design is empty."
+      set design_name [get_property NAME $cur_design]
+   }
+   common::send_gid_msg -ssname BD::TCL -id 2002 -severity "INFO" "Constructing design in IPI design <$cur_design>..."
+
+} elseif { ${cur_design} ne "" && $list_cells ne "" && $cur_design eq $design_name } {
+   # USE CASES:
+   #    5) Current design opened AND has components AND same names.
+
+   set errMsg "Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
+   set nRet 1
+} elseif { [get_files -quiet ${design_name}.bd] ne "" } {
+   # USE CASES: 
+   #    6) Current opened design, has components, but diff names, design_name exists in project.
+   #    7) No opened design, design_name exists in project.
+
+   set errMsg "Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
+   set nRet 2
+
+} else {
+   # USE CASES:
+   #    8) No opened design, design_name not in project.
+   #    9) Current opened design, has components, but diff names, design_name not in project.
+
+   common::send_gid_msg -ssname BD::TCL -id 2003 -severity "INFO" "Currently there is no design <$design_name> in project, so creating one..."
+
+   create_bd_design $design_name
+
+   common::send_gid_msg -ssname BD::TCL -id 2004 -severity "INFO" "Making design <$design_name> as current_bd_design."
+   current_bd_design $design_name
+
+}
+
+common::send_gid_msg -ssname BD::TCL -id 2005 -severity "INFO" "Currently the variable <design_name> is equal to \"$design_name\"."
+
+if { $nRet != 0 } {
+   catch {common::send_gid_msg -ssname BD::TCL -id 2006 -severity "ERROR" $errMsg}
+   return $nRet
+}
+
+set bCheckIPsPassed 1
+##################################################################
+# CHECK IPs
+##################################################################
+set bCheckIPs 1
+if { $bCheckIPs == 1 } {
+   set list_check_ips "\ 
+NEORV32:user:neorv32_vivado_ip:1.0\
+xilinx.com:ip:proc_sys_reset:5.0\
+xilinx.com:ip:clk_wiz:6.0\
+xilinx.com:ip:smartconnect:1.0\
+xilinx.com:ip:axi_gpio:2.0\
+user.org:user:P1_BD_S2026:1.0\
+xilinx.com:ip:util_vector_logic:2.0\
+xilinx.com:inline_hdl:ilslice:1.0\
+"
+
+   set list_ips_missing ""
+   common::send_gid_msg -ssname BD::TCL -id 2011 -severity "INFO" "Checking if the following IPs exist in the project's IP catalog: $list_check_ips ."
+
+   foreach ip_vlnv $list_check_ips {
+      set ip_obj [get_ipdefs -all $ip_vlnv]
+      if { $ip_obj eq "" } {
+         lappend list_ips_missing $ip_vlnv
+      }
+   }
+
+   if { $list_ips_missing ne "" } {
+      catch {common::send_gid_msg -ssname BD::TCL -id 2012 -severity "ERROR" "The following IPs are not found in the IP Catalog:\n  $list_ips_missing\n\nResolution: Please add the repository containing the IP(s) to the project." }
+      set bCheckIPsPassed 0
+   }
+
+}
+
+if { $bCheckIPsPassed != 1 } {
+  common::send_gid_msg -ssname BD::TCL -id 2023 -severity "WARNING" "Will not continue with creation of design due to the error(s) above."
+  return 3
+}
+
+##################################################################
+# DESIGN PROCs
+##################################################################
+
+
+# Hierarchical cell: slice_0
+proc create_hier_cell_slice_0 { parentCell nameHier } {
+
+  variable script_folder
+
+  if { $parentCell eq "" || $nameHier eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2092 -severity "ERROR" "create_hier_cell_slice_0() - Empty argument(s)!"}
+     return
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2090 -severity "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2091 -severity "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+  # Create cell and set as current instance
+  set hier_obj [create_bd_cell -type hier $nameHier]
+  current_bd_instance $hier_obj
+
+  # Create interface pins
+
+  # Create pins
+  create_bd_pin -dir O -from 0 -to 0 Dout
+  create_bd_pin -dir O -from 0 -to 0 Dout1
+  create_bd_pin -dir O -from 0 -to 0 Dout2
+  create_bd_pin -dir O -from 0 -to 0 Dout3
+  create_bd_pin -dir O -from 0 -to 0 Dout4
+  create_bd_pin -dir I -from 4 -to 0 Din
+
+  # Create instance: ilslice_3, and set properties
+  set ilslice_3 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilslice:1.0 ilslice_3 ]
+  set_property -dict [list \
+    CONFIG.DIN_FROM {3} \
+    CONFIG.DIN_TO {3} \
+    CONFIG.DIN_WIDTH {5} \
+  ] $ilslice_3
+
+
+  # Create instance: ilslice_0, and set properties
+  set ilslice_0 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilslice:1.0 ilslice_0 ]
+  set_property CONFIG.DIN_WIDTH {5} $ilslice_0
+
+
+  # Create instance: ilslice_1, and set properties
+  set ilslice_1 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilslice:1.0 ilslice_1 ]
+  set_property -dict [list \
+    CONFIG.DIN_FROM {1} \
+    CONFIG.DIN_TO {1} \
+    CONFIG.DIN_WIDTH {5} \
+  ] $ilslice_1
+
+
+  # Create instance: ilslice_2, and set properties
+  set ilslice_2 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilslice:1.0 ilslice_2 ]
+  set_property -dict [list \
+    CONFIG.DIN_FROM {2} \
+    CONFIG.DIN_TO {2} \
+    CONFIG.DIN_WIDTH {5} \
+  ] $ilslice_2
+
+
+  # Create instance: ilslice_4, and set properties
+  set ilslice_4 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilslice:1.0 ilslice_4 ]
+  set_property -dict [list \
+    CONFIG.DIN_FROM {4} \
+    CONFIG.DIN_TO {4} \
+    CONFIG.DIN_WIDTH {5} \
+  ] $ilslice_4
+
+
+  # Create port connections
+  connect_bd_net -net Din_1  [get_bd_pins Din] \
+  [get_bd_pins ilslice_0/Din] \
+  [get_bd_pins ilslice_1/Din] \
+  [get_bd_pins ilslice_2/Din] \
+  [get_bd_pins ilslice_3/Din] \
+  [get_bd_pins ilslice_4/Din]
+  connect_bd_net -net ilslice_0_Dout  [get_bd_pins ilslice_0/Dout] \
+  [get_bd_pins Dout]
+  connect_bd_net -net ilslice_1_Dout  [get_bd_pins ilslice_1/Dout] \
+  [get_bd_pins Dout1]
+  connect_bd_net -net ilslice_2_Dout  [get_bd_pins ilslice_2/Dout] \
+  [get_bd_pins Dout2]
+  connect_bd_net -net ilslice_3_Dout  [get_bd_pins ilslice_3/Dout] \
+  [get_bd_pins Dout3]
+  connect_bd_net -net ilslice_4_Dout  [get_bd_pins ilslice_4/Dout] \
+  [get_bd_pins Dout4]
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+}
+
+# Hierarchical cell: Pong_base_0
+proc create_hier_cell_Pong_base_0 { parentCell nameHier } {
+
+  variable script_folder
+
+  if { $parentCell eq "" || $nameHier eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2092 -severity "ERROR" "create_hier_cell_Pong_base_0() - Empty argument(s)!"}
+     return
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2090 -severity "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2091 -severity "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+  # Create cell and set as current instance
+  set hier_obj [create_bd_cell -type hier $nameHier]
+  current_bd_instance $hier_obj
+
+  # Create interface pins
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:hdmi_rtl:2.0 hdmi_tx_0_0
+
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI
+
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:hdmi_rtl:2.0 hdmi_tx_0_1
+
+
+  # Create pins
+  create_bd_pin -dir I -type clk clk_100MHz_0
+  create_bd_pin -dir I -type rst clk_rst_0
+  create_bd_pin -dir O -from 3 -to 0 D0_an_0_0
+  create_bd_pin -dir O -from 3 -to 0 D1_an_0_0
+  create_bd_pin -dir O -from 6 -to 0 o_sev_seg_P1_0_0
+  create_bd_pin -dir O -from 6 -to 0 o_sev_seg_P2_0_0
+  create_bd_pin -dir I -type rst rst_0_1
+  create_bd_pin -dir I -type clk s_axi_aclk
+  create_bd_pin -dir I -type rst s_axi_aresetn
+
+  # Create instance: axi_gpio_0, and set properties
+  set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
+  set_property -dict [list \
+    CONFIG.C_ALL_OUTPUTS {1} \
+    CONFIG.C_GPIO_WIDTH {5} \
+  ] $axi_gpio_0
+
+
+  # Create instance: P1_BD_S2026_0, and set properties
+  set P1_BD_S2026_0 [ create_bd_cell -type ip -vlnv user.org:user:P1_BD_S2026:1.0 P1_BD_S2026_0 ]
+
+  # Create instance: slice_0
+  create_hier_cell_slice_0 $hier_obj slice_0
+
+  # Create instance: util_vector_logic_0, and set properties
+  set util_vector_logic_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_0 ]
+  set_property -dict [list \
+    CONFIG.C_OPERATION {not} \
+    CONFIG.C_SIZE {1} \
+  ] $util_vector_logic_0
+
+
+  # Create interface connections
+  connect_bd_intf_net -intf_net Conn1 [get_bd_intf_pins P1_BD_S2026_0/hdmi_tx_0] [get_bd_intf_pins hdmi_tx_0_1]
+  connect_bd_intf_net -intf_net Conn2 [get_bd_intf_pins axi_gpio_0/S_AXI] [get_bd_intf_pins S_AXI]
+
+  # Create port connections
+  connect_bd_net -net P1_BD_S2026_0_D0_an_0  [get_bd_pins P1_BD_S2026_0/D0_an_0] \
+  [get_bd_pins D0_an_0_0]
+  connect_bd_net -net P1_BD_S2026_0_D1_an_0  [get_bd_pins P1_BD_S2026_0/D1_an_0] \
+  [get_bd_pins D1_an_0_0]
+  connect_bd_net -net P1_BD_S2026_0_o_sev_seg_P1_0  [get_bd_pins P1_BD_S2026_0/o_sev_seg_P1_0] \
+  [get_bd_pins o_sev_seg_P1_0_0]
+  connect_bd_net -net P1_BD_S2026_0_o_sev_seg_P2_0  [get_bd_pins P1_BD_S2026_0/o_sev_seg_P2_0] \
+  [get_bd_pins o_sev_seg_P2_0_0]
+  connect_bd_net -net axi_gpio_0_gpio_io_o  [get_bd_pins axi_gpio_0/gpio_io_o] \
+  [get_bd_pins slice_0/Din]
+  connect_bd_net -net clk_100MHz_0_1  [get_bd_pins clk_100MHz_0] \
+  [get_bd_pins P1_BD_S2026_0/clk_100MHz]
+  connect_bd_net -net clk_rst_0_1  [get_bd_pins clk_rst_0] \
+  [get_bd_pins util_vector_logic_0/Op1]
+  connect_bd_net -net rst_0_1_1  [get_bd_pins rst_0_1] \
+  [get_bd_pins P1_BD_S2026_0/rst_0]
+  connect_bd_net -net s_axi_aclk_1  [get_bd_pins s_axi_aclk] \
+  [get_bd_pins axi_gpio_0/s_axi_aclk]
+  connect_bd_net -net s_axi_aresetn_1  [get_bd_pins s_axi_aresetn] \
+  [get_bd_pins axi_gpio_0/s_axi_aresetn]
+  connect_bd_net -net slice_0_Dout  [get_bd_pins slice_0/Dout] \
+  [get_bd_pins P1_BD_S2026_0/i_Switch_0]
+  connect_bd_net -net slice_0_Dout1  [get_bd_pins slice_0/Dout1] \
+  [get_bd_pins P1_BD_S2026_0/i_Switch_1]
+  connect_bd_net -net slice_0_Dout2  [get_bd_pins slice_0/Dout2] \
+  [get_bd_pins P1_BD_S2026_0/i_Switch_2]
+  connect_bd_net -net slice_0_Dout3  [get_bd_pins slice_0/Dout3] \
+  [get_bd_pins P1_BD_S2026_0/i_Switch_3]
+  connect_bd_net -net slice_0_Dout4  [get_bd_pins slice_0/Dout4] \
+  [get_bd_pins P1_BD_S2026_0/i_Switch_4]
+  connect_bd_net -net util_vector_logic_0_Res  [get_bd_pins util_vector_logic_0/Res] \
+  [get_bd_pins P1_BD_S2026_0/clk_rst]
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+}
+
+
+# Procedure to create entire design; Provide argument to make
+# procedure reusable. If parentCell is "", will use root.
+proc create_root_design { parentCell } {
+
+  variable script_folder
+  variable design_name
+
+  if { $parentCell eq "" } {
+     set parentCell [get_bd_cells /]
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2090 -severity "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2091 -severity "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+
+  # Create interface ports
+  set hdmi_tx_0_0 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:hdmi_rtl:2.0 hdmi_tx_0_0 ]
+
+
+  # Create ports
+  set resetn_0 [ create_bd_port -dir I resetn_0 ]
+  set clk_100MHz [ create_bd_port -dir I clk_100MHz ]
+  set gpio_i_0 [ create_bd_port -dir I -from 7 -to 0 gpio_i_0 ]
+  set uart0_rxd_i_0 [ create_bd_port -dir I uart0_rxd_i_0 ]
+  set uart0_txd_o_0 [ create_bd_port -dir O uart0_txd_o_0 ]
+  set gpio_o_0 [ create_bd_port -dir O -from 7 -to 0 gpio_o_0 ]
+  set D0_an_0_0 [ create_bd_port -dir O -from 3 -to 0 D0_an_0_0 ]
+  set D1_an_0_0 [ create_bd_port -dir O -from 3 -to 0 D1_an_0_0 ]
+  set o_sev_seg_P1_0_0 [ create_bd_port -dir O -from 6 -to 0 o_sev_seg_P1_0_0 ]
+  set o_sev_seg_P2_0_0 [ create_bd_port -dir O -from 6 -to 0 o_sev_seg_P2_0_0 ]
+  set rst_0_0 [ create_bd_port -dir I -type rst rst_0_0 ]
+
+  # Create instance: neorv32_vivado_ip_0, and set properties
+  set neorv32_vivado_ip_0 [ create_bd_cell -type ip -vlnv NEORV32:user:neorv32_vivado_ip:1.0 neorv32_vivado_ip_0 ]
+  set_property -dict [list \
+    CONFIG.BOOT_MODE_SELECT {2} \
+    CONFIG.DMEM_EN {true} \
+    CONFIG.DUAL_CORE_EN {true} \
+    CONFIG.IMEM_EN {true} \
+    CONFIG.IO_GPIO_DIR_EN {false} \
+    CONFIG.IO_GPIO_EN {true} \
+    CONFIG.IO_GPIO_IN_NUM {8} \
+    CONFIG.IO_GPIO_OUT_NUM {8} \
+    CONFIG.IO_NEOLED_EN {false} \
+    CONFIG.IO_SPI_EN {true} \
+    CONFIG.IO_SPI_FIFO {256} \
+    CONFIG.IO_UART0_EN {true} \
+    CONFIG.IO_UART0_RX_FIFO {1024} \
+    CONFIG.IO_UART0_TX_FIFO {256} \
+    CONFIG.IO_WDT_EN {true} \
+    CONFIG.OCD_EN {false} \
+    CONFIG.XBUS_EN {true} \
+  ] $neorv32_vivado_ip_0
+
+
+  # Create instance: proc_sys_reset_0, and set properties
+  set proc_sys_reset_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 proc_sys_reset_0 ]
+
+  # Create instance: clk_wiz_0, and set properties
+  set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk_wiz_0 ]
+  set_property -dict [list \
+    CONFIG.RESET_PORT {resetn} \
+    CONFIG.RESET_TYPE {ACTIVE_LOW} \
+  ] $clk_wiz_0
+
+
+  # Create instance: Pong_base_0
+  create_hier_cell_Pong_base_0 [current_bd_instance .] Pong_base_0
+
+  # Create instance: smartconnect_0, and set properties
+  set smartconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 smartconnect_0 ]
+
+  # Create interface connections
+  connect_bd_intf_net -intf_net Pong_base_0_hdmi_tx_0_1 [get_bd_intf_ports hdmi_tx_0_0] [get_bd_intf_pins Pong_base_0/hdmi_tx_0_1]
+  connect_bd_intf_net -intf_net neorv32_vivado_ip_0_m_axi [get_bd_intf_pins neorv32_vivado_ip_0/m_axi] [get_bd_intf_pins smartconnect_0/S00_AXI]
+  connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_pins smartconnect_0/M00_AXI] [get_bd_intf_pins Pong_base_0/S_AXI]
+
+  # Create port connections
+  connect_bd_net -net Pong_base_0_D0_an_0_0  [get_bd_pins Pong_base_0/D0_an_0_0] \
+  [get_bd_ports D0_an_0_0]
+  connect_bd_net -net Pong_base_0_D1_an_0_0  [get_bd_pins Pong_base_0/D1_an_0_0] \
+  [get_bd_ports D1_an_0_0]
+  connect_bd_net -net Pong_base_0_o_sev_seg_P1_0_0  [get_bd_pins Pong_base_0/o_sev_seg_P1_0_0] \
+  [get_bd_ports o_sev_seg_P1_0_0]
+  connect_bd_net -net Pong_base_0_o_sev_seg_P2_0_0  [get_bd_pins Pong_base_0/o_sev_seg_P2_0_0] \
+  [get_bd_ports o_sev_seg_P2_0_0]
+  connect_bd_net -net clk_in1_0_1  [get_bd_ports clk_100MHz] \
+  [get_bd_pins clk_wiz_0/clk_in1]
+  connect_bd_net -net clk_wiz_0_clk_out1  [get_bd_pins clk_wiz_0/clk_out1] \
+  [get_bd_pins proc_sys_reset_0/slowest_sync_clk] \
+  [get_bd_pins neorv32_vivado_ip_0/clk] \
+  [get_bd_pins Pong_base_0/clk_100MHz_0] \
+  [get_bd_pins smartconnect_0/aclk] \
+  [get_bd_pins Pong_base_0/s_axi_aclk]
+  connect_bd_net -net clk_wiz_0_locked  [get_bd_pins clk_wiz_0/locked] \
+  [get_bd_pins proc_sys_reset_0/dcm_locked]
+  connect_bd_net -net gpio_i_0_1  [get_bd_ports gpio_i_0] \
+  [get_bd_pins neorv32_vivado_ip_0/gpio_i]
+  connect_bd_net -net neorv32_vivado_ip_0_gpio_o  [get_bd_pins neorv32_vivado_ip_0/gpio_o] \
+  [get_bd_ports gpio_o_0]
+  connect_bd_net -net neorv32_vivado_ip_0_uart0_txd_o  [get_bd_pins neorv32_vivado_ip_0/uart0_txd_o] \
+  [get_bd_ports uart0_txd_o_0]
+  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn  [get_bd_pins proc_sys_reset_0/peripheral_aresetn] \
+  [get_bd_pins neorv32_vivado_ip_0/resetn] \
+  [get_bd_pins smartconnect_0/aresetn] \
+  [get_bd_pins Pong_base_0/s_axi_aresetn]
+  connect_bd_net -net resetn_0_1  [get_bd_ports resetn_0] \
+  [get_bd_pins proc_sys_reset_0/ext_reset_in] \
+  [get_bd_pins clk_wiz_0/resetn] \
+  [get_bd_pins Pong_base_0/clk_rst_0]
+  connect_bd_net -net rst_0_0_1  [get_bd_ports rst_0_0] \
+  [get_bd_pins Pong_base_0/rst_0_1]
+  connect_bd_net -net uart0_rxd_i_0_1  [get_bd_ports uart0_rxd_i_0] \
+  [get_bd_pins neorv32_vivado_ip_0/uart0_rxd_i]
+
+  # Create address segments
+  assign_bd_address -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces neorv32_vivado_ip_0/m_axi] [get_bd_addr_segs Pong_base_0/axi_gpio_0/S_AXI/Reg] -force
+
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+
+  save_bd_design
+}
+# End of create_root_design()
+
+
+##################################################################
+# MAIN FLOW
+##################################################################
+
+create_root_design ""
+
+
+common::send_gid_msg -ssname BD::TCL -id 2053 -severity "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
+
