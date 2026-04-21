@@ -136,6 +136,10 @@ xilinx.com:ip:smartconnect:1.0\
 xilinx.com:ip:mig_7series:4.2\
 xilinx.com:inline_hdl:ilvector_logic:1.0\
 xilinx.com:inline_hdl:ilconcat:1.0\
+xilinx.com:ip:axi_gpio:2.0\
+user.org:user:P1_BD_S2026:1.0\
+xilinx.com:ip:util_vector_logic:2.0\
+xilinx.com:inline_hdl:ilslice:1.0\
 "
 
    set list_ips_missing ""
@@ -165,7 +169,7 @@ if { $bCheckIPsPassed != 1 } {
 # MIG PRJ FILE TCL PROCs
 ##################################################################
 
-proc write_mig_file_design_1_mig_7series_0_1 { str_mig_prj_filepath } {
+proc write_mig_file_design_1_mig_7series_0_0 { str_mig_prj_filepath } {
 
    file mkdir [ file dirname "$str_mig_prj_filepath" ]
    set mig_prj_file [open $str_mig_prj_filepath  w+]
@@ -313,7 +317,7 @@ proc write_mig_file_design_1_mig_7series_0_1 { str_mig_prj_filepath } {
 
    close $mig_prj_file
 }
-# End of write_mig_file_design_1_mig_7series_0_1()
+# End of write_mig_file_design_1_mig_7series_0_0()
 
 
 
@@ -321,6 +325,230 @@ proc write_mig_file_design_1_mig_7series_0_1 { str_mig_prj_filepath } {
 # DESIGN PROCs
 ##################################################################
 
+
+# Hierarchical cell: slice_0
+proc create_hier_cell_slice_0 { parentCell nameHier } {
+
+  variable script_folder
+
+  if { $parentCell eq "" || $nameHier eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2092 -severity "ERROR" "create_hier_cell_slice_0() - Empty argument(s)!"}
+     return
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2090 -severity "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2091 -severity "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+  # Create cell and set as current instance
+  set hier_obj [create_bd_cell -type hier $nameHier]
+  current_bd_instance $hier_obj
+
+  # Create interface pins
+
+  # Create pins
+  create_bd_pin -dir O -from 0 -to 0 Dout
+  create_bd_pin -dir O -from 0 -to 0 Dout1
+  create_bd_pin -dir O -from 0 -to 0 Dout2
+  create_bd_pin -dir O -from 0 -to 0 Dout3
+  create_bd_pin -dir O -from 0 -to 0 Dout4
+  create_bd_pin -dir I -from 4 -to 0 Din
+
+  # Create instance: ilslice_3, and set properties
+  set ilslice_3 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilslice:1.0 ilslice_3 ]
+  set_property -dict [list \
+    CONFIG.DIN_FROM {3} \
+    CONFIG.DIN_TO {3} \
+    CONFIG.DIN_WIDTH {5} \
+  ] $ilslice_3
+
+
+  # Create instance: ilslice_0, and set properties
+  set ilslice_0 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilslice:1.0 ilslice_0 ]
+  set_property CONFIG.DIN_WIDTH {5} $ilslice_0
+
+
+  # Create instance: ilslice_1, and set properties
+  set ilslice_1 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilslice:1.0 ilslice_1 ]
+  set_property -dict [list \
+    CONFIG.DIN_FROM {1} \
+    CONFIG.DIN_TO {1} \
+    CONFIG.DIN_WIDTH {5} \
+  ] $ilslice_1
+
+
+  # Create instance: ilslice_2, and set properties
+  set ilslice_2 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilslice:1.0 ilslice_2 ]
+  set_property -dict [list \
+    CONFIG.DIN_FROM {2} \
+    CONFIG.DIN_TO {2} \
+    CONFIG.DIN_WIDTH {5} \
+  ] $ilslice_2
+
+
+  # Create instance: ilslice_4, and set properties
+  set ilslice_4 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilslice:1.0 ilslice_4 ]
+  set_property -dict [list \
+    CONFIG.DIN_FROM {4} \
+    CONFIG.DIN_TO {4} \
+    CONFIG.DIN_WIDTH {5} \
+  ] $ilslice_4
+
+
+  # Create port connections
+  connect_bd_net -net Din_1  [get_bd_pins Din] \
+  [get_bd_pins ilslice_0/Din] \
+  [get_bd_pins ilslice_1/Din] \
+  [get_bd_pins ilslice_2/Din] \
+  [get_bd_pins ilslice_3/Din] \
+  [get_bd_pins ilslice_4/Din]
+  connect_bd_net -net ilslice_0_Dout  [get_bd_pins ilslice_0/Dout] \
+  [get_bd_pins Dout]
+  connect_bd_net -net ilslice_1_Dout  [get_bd_pins ilslice_1/Dout] \
+  [get_bd_pins Dout1]
+  connect_bd_net -net ilslice_2_Dout  [get_bd_pins ilslice_2/Dout] \
+  [get_bd_pins Dout2]
+  connect_bd_net -net ilslice_3_Dout  [get_bd_pins ilslice_3/Dout] \
+  [get_bd_pins Dout3]
+  connect_bd_net -net ilslice_4_Dout  [get_bd_pins ilslice_4/Dout] \
+  [get_bd_pins Dout4]
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+}
+
+# Hierarchical cell: Pong_base_0
+proc create_hier_cell_Pong_base_0 { parentCell nameHier } {
+
+  variable script_folder
+
+  if { $parentCell eq "" || $nameHier eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2092 -severity "ERROR" "create_hier_cell_Pong_base_0() - Empty argument(s)!"}
+     return
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2090 -severity "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2091 -severity "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+  # Create cell and set as current instance
+  set hier_obj [create_bd_cell -type hier $nameHier]
+  current_bd_instance $hier_obj
+
+  # Create interface pins
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:hdmi_rtl:2.0 hdmi_tx_0_0
+
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI
+
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:hdmi_rtl:2.0 hdmi_tx_0_1
+
+
+  # Create pins
+  create_bd_pin -dir I -type clk clk_100MHz_0
+  create_bd_pin -dir I -type rst clk_rst_0
+  create_bd_pin -dir O -from 3 -to 0 D0_an_0_0
+  create_bd_pin -dir O -from 3 -to 0 D1_an_0_0
+  create_bd_pin -dir O -from 6 -to 0 o_sev_seg_P1_0_0
+  create_bd_pin -dir O -from 6 -to 0 o_sev_seg_P2_0_0
+  create_bd_pin -dir I -type rst rst_0_1
+  create_bd_pin -dir I -type clk s_axi_aclk
+  create_bd_pin -dir I -type rst s_axi_aresetn
+
+  # Create instance: axi_gpio_0, and set properties
+  set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
+  set_property -dict [list \
+    CONFIG.C_ALL_OUTPUTS {1} \
+    CONFIG.C_GPIO_WIDTH {5} \
+  ] $axi_gpio_0
+
+
+  # Create instance: P1_BD_S2026_0, and set properties
+  set P1_BD_S2026_0 [ create_bd_cell -type ip -vlnv user.org:user:P1_BD_S2026:1.0 P1_BD_S2026_0 ]
+
+  # Create instance: slice_0
+  create_hier_cell_slice_0 $hier_obj slice_0
+
+  # Create instance: util_vector_logic_0, and set properties
+  set util_vector_logic_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_0 ]
+  set_property -dict [list \
+    CONFIG.C_OPERATION {not} \
+    CONFIG.C_SIZE {1} \
+  ] $util_vector_logic_0
+
+
+  # Create interface connections
+  connect_bd_intf_net -intf_net Conn1 [get_bd_intf_pins P1_BD_S2026_0/hdmi_tx_0] [get_bd_intf_pins hdmi_tx_0_1]
+  connect_bd_intf_net -intf_net Conn2 [get_bd_intf_pins axi_gpio_0/S_AXI] [get_bd_intf_pins S_AXI]
+
+  # Create port connections
+  connect_bd_net -net P1_BD_S2026_0_D0_an_0  [get_bd_pins P1_BD_S2026_0/D0_an_0] \
+  [get_bd_pins D0_an_0_0]
+  connect_bd_net -net P1_BD_S2026_0_D1_an_0  [get_bd_pins P1_BD_S2026_0/D1_an_0] \
+  [get_bd_pins D1_an_0_0]
+  connect_bd_net -net P1_BD_S2026_0_o_sev_seg_P1_0  [get_bd_pins P1_BD_S2026_0/o_sev_seg_P1_0] \
+  [get_bd_pins o_sev_seg_P1_0_0]
+  connect_bd_net -net P1_BD_S2026_0_o_sev_seg_P2_0  [get_bd_pins P1_BD_S2026_0/o_sev_seg_P2_0] \
+  [get_bd_pins o_sev_seg_P2_0_0]
+  connect_bd_net -net axi_gpio_0_gpio_io_o  [get_bd_pins axi_gpio_0/gpio_io_o] \
+  [get_bd_pins slice_0/Din]
+  connect_bd_net -net clk_100MHz_0_1  [get_bd_pins clk_100MHz_0] \
+  [get_bd_pins P1_BD_S2026_0/clk_100MHz]
+  connect_bd_net -net clk_rst_0_1  [get_bd_pins clk_rst_0] \
+  [get_bd_pins util_vector_logic_0/Op1]
+  connect_bd_net -net rst_0_1_1  [get_bd_pins rst_0_1] \
+  [get_bd_pins P1_BD_S2026_0/rst_0]
+  connect_bd_net -net s_axi_aclk_1  [get_bd_pins s_axi_aclk] \
+  [get_bd_pins axi_gpio_0/s_axi_aclk]
+  connect_bd_net -net s_axi_aresetn_1  [get_bd_pins s_axi_aresetn] \
+  [get_bd_pins axi_gpio_0/s_axi_aresetn]
+  connect_bd_net -net slice_0_Dout  [get_bd_pins slice_0/Dout] \
+  [get_bd_pins P1_BD_S2026_0/i_Switch_0]
+  connect_bd_net -net slice_0_Dout1  [get_bd_pins slice_0/Dout1] \
+  [get_bd_pins P1_BD_S2026_0/i_Switch_1]
+  connect_bd_net -net slice_0_Dout2  [get_bd_pins slice_0/Dout2] \
+  [get_bd_pins P1_BD_S2026_0/i_Switch_2]
+  connect_bd_net -net slice_0_Dout3  [get_bd_pins slice_0/Dout3] \
+  [get_bd_pins P1_BD_S2026_0/i_Switch_3]
+  connect_bd_net -net slice_0_Dout4  [get_bd_pins slice_0/Dout4] \
+  [get_bd_pins P1_BD_S2026_0/i_Switch_4]
+  connect_bd_net -net util_vector_logic_0_Res  [get_bd_pins util_vector_logic_0/Res] \
+  [get_bd_pins P1_BD_S2026_0/clk_rst]
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+}
 
 
 # Procedure to create entire design; Provide argument to make
@@ -358,6 +586,8 @@ proc create_root_design { parentCell } {
   # Create interface ports
   set ddr3 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddrx_rtl:1.0 ddr3 ]
 
+  set hdmi_tx_0_0 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:hdmi_rtl:2.0 hdmi_tx_0_0 ]
+
 
   # Create ports
   set resetn_0 [ create_bd_port -dir I resetn_0 ]
@@ -367,6 +597,11 @@ proc create_root_design { parentCell } {
   set uart0_txd_o_0 [ create_bd_port -dir O uart0_txd_o_0 ]
   set gpio_o_0 [ create_bd_port -dir O -from 7 -to 0 gpio_o_0 ]
   set init_calib_complete_0 [ create_bd_port -dir O init_calib_complete_0 ]
+  set rst_0_0 [ create_bd_port -dir I -type rst rst_0_0 ]
+  set D0_an_0_0 [ create_bd_port -dir O -from 3 -to 0 D0_an_0_0 ]
+  set D1_an_0_0 [ create_bd_port -dir O -from 3 -to 0 D1_an_0_0 ]
+  set o_sev_seg_P1_0_0 [ create_bd_port -dir O -from 6 -to 0 o_sev_seg_P1_0_0 ]
+  set o_sev_seg_P2_0_0 [ create_bd_port -dir O -from 6 -to 0 o_sev_seg_P2_0_0 ]
 
   # Create instance: neorv32_vivado_ip_0, and set properties
   set neorv32_vivado_ip_0 [ create_bd_cell -type ip -vlnv NEORV32:user:neorv32_vivado_ip:1.0 neorv32_vivado_ip_0 ]
@@ -381,6 +616,7 @@ proc create_root_design { parentCell } {
     CONFIG.ICACHE_NUM_BLOCKS {256} \
     CONFIG.IMEM_EN {true} \
     CONFIG.IMEM_SIZE {32768} \
+    CONFIG.IO_CFS_EN {true} \
     CONFIG.IO_CLINT_EN {true} \
     CONFIG.IO_DMA_EN {false} \
     CONFIG.IO_GPIO_DIR_EN {false} \
@@ -397,6 +633,10 @@ proc create_root_design { parentCell } {
     CONFIG.OCD_EN {false} \
     CONFIG.RISCV_ISA_C {false} \
     CONFIG.RISCV_ISA_Zaamo {true} \
+    CONFIG.RISCV_ISA_Zbkb {true} \
+    CONFIG.RISCV_ISA_Zbkx {true} \
+    CONFIG.RISCV_ISA_Zknd {true} \
+    CONFIG.RISCV_ISA_Zkne {true} \
     CONFIG.XBUS_EN {true} \
   ] $neorv32_vivado_ip_0
 
@@ -419,17 +659,17 @@ proc create_root_design { parentCell } {
     CONFIG.CLKOUT3_USED {true} \
     CONFIG.CLKOUT4_JITTER {175.402} \
     CONFIG.CLKOUT4_PHASE_ERROR {98.575} \
-    CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {25.000} \
+    CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {100.000} \
     CONFIG.CLKOUT4_USED {false} \
     CONFIG.CLKOUT5_JITTER {125.247} \
     CONFIG.CLKOUT5_PHASE_ERROR {98.575} \
-    CONFIG.CLKOUT5_REQUESTED_OUT_FREQ {125.000} \
+    CONFIG.CLKOUT5_REQUESTED_OUT_FREQ {100.000} \
     CONFIG.CLKOUT5_USED {false} \
     CONFIG.CLK_OUT1_PORT {clk_100} \
     CONFIG.CLK_OUT2_PORT {clk_200} \
     CONFIG.CLK_OUT3_PORT {clk_333} \
-    CONFIG.CLK_OUT4_PORT {clk_25} \
-    CONFIG.CLK_OUT5_PORT {clk_125} \
+    CONFIG.CLK_OUT4_PORT {clk_out4} \
+    CONFIG.CLK_OUT5_PORT {clk_out5} \
     CONFIG.MMCM_CLKOUT0_DIVIDE_F {10.000} \
     CONFIG.MMCM_CLKOUT1_DIVIDE {5} \
     CONFIG.MMCM_CLKOUT2_DIVIDE {3} \
@@ -445,7 +685,7 @@ proc create_root_design { parentCell } {
   set smartconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 smartconnect_0 ]
   set_property -dict [list \
     CONFIG.NUM_CLKS {2} \
-    CONFIG.NUM_MI {1} \
+    CONFIG.NUM_MI {2} \
     CONFIG.NUM_SI {1} \
   ] $smartconnect_0
 
@@ -457,7 +697,7 @@ proc create_root_design { parentCell } {
   set str_mig_folder [get_property IP_DIR [ get_ips [ get_property CONFIG.Component_Name $mig_7series_0 ] ] ]
   set str_mig_file_name mig_a.prj
   set str_mig_file_path ${str_mig_folder}/${str_mig_file_name}
-  write_mig_file_design_1_mig_7series_0_1 $str_mig_file_path
+  write_mig_file_design_1_mig_7series_0_0 $str_mig_file_path
 
   set_property -dict [list \
     CONFIG.BOARD_MIG_PARAM {Custom} \
@@ -486,12 +726,25 @@ proc create_root_design { parentCell } {
   ] $ilconcat_0
 
 
+  # Create instance: Pong_base_0
+  create_hier_cell_Pong_base_0 [current_bd_instance .] Pong_base_0
+
   # Create interface connections
+  connect_bd_intf_net -intf_net Pong_base_0_hdmi_tx_0_1 [get_bd_intf_ports hdmi_tx_0_0] [get_bd_intf_pins Pong_base_0/hdmi_tx_0_1]
   connect_bd_intf_net -intf_net mig_7series_0_DDR3 [get_bd_intf_ports ddr3] [get_bd_intf_pins mig_7series_0/DDR3]
   connect_bd_intf_net -intf_net neorv32_vivado_ip_0_m_axi [get_bd_intf_pins neorv32_vivado_ip_0/m_axi] [get_bd_intf_pins smartconnect_0/S00_AXI]
   connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_pins smartconnect_0/M00_AXI] [get_bd_intf_pins mig_7series_0/S_AXI]
+  connect_bd_intf_net -intf_net smartconnect_0_M01_AXI [get_bd_intf_pins smartconnect_0/M01_AXI] [get_bd_intf_pins Pong_base_0/S_AXI]
 
   # Create port connections
+  connect_bd_net -net Pong_base_0_D0_an_0_0  [get_bd_pins Pong_base_0/D0_an_0_0] \
+  [get_bd_ports D0_an_0_0]
+  connect_bd_net -net Pong_base_0_D1_an_0_0  [get_bd_pins Pong_base_0/D1_an_0_0] \
+  [get_bd_ports D1_an_0_0]
+  connect_bd_net -net Pong_base_0_o_sev_seg_P1_0_0  [get_bd_pins Pong_base_0/o_sev_seg_P1_0_0] \
+  [get_bd_ports o_sev_seg_P1_0_0]
+  connect_bd_net -net Pong_base_0_o_sev_seg_P2_0_0  [get_bd_pins Pong_base_0/o_sev_seg_P2_0_0] \
+  [get_bd_ports o_sev_seg_P2_0_0]
   connect_bd_net -net clk_in1_0_1  [get_bd_ports clk_100MHz] \
   [get_bd_pins clk_wiz_0/clk_in1]
   connect_bd_net -net clk_wiz_0_clk_200  [get_bd_pins clk_wiz_0/clk_200] \
@@ -501,7 +754,9 @@ proc create_root_design { parentCell } {
   connect_bd_net -net clk_wiz_0_clk_out1  [get_bd_pins clk_wiz_0/clk_100] \
   [get_bd_pins smartconnect_0/aclk] \
   [get_bd_pins proc_sys_reset_0/slowest_sync_clk] \
-  [get_bd_pins neorv32_vivado_ip_0/clk]
+  [get_bd_pins neorv32_vivado_ip_0/clk] \
+  [get_bd_pins Pong_base_0/clk_100MHz_0] \
+  [get_bd_pins Pong_base_0/s_axi_aclk]
   connect_bd_net -net clk_wiz_0_locked  [get_bd_pins clk_wiz_0/locked] \
   [get_bd_pins proc_sys_reset_0/dcm_locked] \
   [get_bd_pins ilvector_logic_0/Op1]
@@ -527,16 +782,21 @@ proc create_root_design { parentCell } {
   [get_bd_ports uart0_txd_o_0]
   connect_bd_net -net proc_sys_reset_0_peripheral_aresetn  [get_bd_pins proc_sys_reset_0/peripheral_aresetn] \
   [get_bd_pins smartconnect_0/aresetn] \
-  [get_bd_pins neorv32_vivado_ip_0/resetn]
+  [get_bd_pins neorv32_vivado_ip_0/resetn] \
+  [get_bd_pins Pong_base_0/s_axi_aresetn]
   connect_bd_net -net proc_sys_reset_1_peripheral_aresetn  [get_bd_pins proc_sys_reset_1/peripheral_aresetn] \
   [get_bd_pins mig_7series_0/aresetn]
   connect_bd_net -net resetn_0_1  [get_bd_ports resetn_0] \
   [get_bd_pins proc_sys_reset_0/ext_reset_in] \
-  [get_bd_pins clk_wiz_0/resetn]
+  [get_bd_pins clk_wiz_0/resetn] \
+  [get_bd_pins Pong_base_0/clk_rst_0]
+  connect_bd_net -net rst_0_1_0_1  [get_bd_ports rst_0_0] \
+  [get_bd_pins Pong_base_0/rst_0_1]
   connect_bd_net -net uart0_rxd_i_0_1  [get_bd_ports uart0_rxd_i_0] \
   [get_bd_pins neorv32_vivado_ip_0/uart0_rxd_i]
 
   # Create address segments
+  assign_bd_address -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces neorv32_vivado_ip_0/m_axi] [get_bd_addr_segs Pong_base_0/axi_gpio_0/S_AXI/Reg] -force
   assign_bd_address -offset 0x88000000 -range 0x08000000 -target_address_space [get_bd_addr_spaces neorv32_vivado_ip_0/m_axi] [get_bd_addr_segs mig_7series_0/memmap/memaddr] -force
 
 
