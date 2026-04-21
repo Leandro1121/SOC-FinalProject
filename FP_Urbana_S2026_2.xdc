@@ -10,7 +10,7 @@ set_property BITSTREAM.Config.SPI_buswidth 4 [current_design]
 
 set_property SEVERITY {warning} [get_drc_checks LUTLP-1]
 set_property IS_ENABLED FALSE [get_drc_checks LUTLP-1]
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [current_design]
 
 # On-board Slide Switches
 set_property -dict {PACKAGE_PIN G1 IOSTANDARD LVCMOS25} [get_ports {gpio_i_0[4]}]
