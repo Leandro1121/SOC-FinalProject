@@ -13,7 +13,7 @@ APP_INC += -I ./lib/inc
 # -----------------------------------------------------------------------------
 
 # FreeRTOS home folder
-FREERTOS_HOME ?= ../../../FreeRTOS-Kernel
+FREERTOS_HOME ?= ../../FreeRTOS-Kernel
 
 # Kernel
 APP_SRC += $(wildcard $(FREERTOS_HOME)/*.c)

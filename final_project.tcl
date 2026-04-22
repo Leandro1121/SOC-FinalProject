@@ -754,9 +754,9 @@ proc create_root_design { parentCell } {
   connect_bd_net -net clk_wiz_0_clk_out1  [get_bd_pins clk_wiz_0/clk_100] \
   [get_bd_pins smartconnect_0/aclk] \
   [get_bd_pins proc_sys_reset_0/slowest_sync_clk] \
-  [get_bd_pins neorv32_vivado_ip_0/clk] \
   [get_bd_pins Pong_base_0/clk_100MHz_0] \
-  [get_bd_pins Pong_base_0/s_axi_aclk]
+  [get_bd_pins Pong_base_0/s_axi_aclk] \
+  [get_bd_pins neorv32_vivado_ip_0/clk]
   connect_bd_net -net clk_wiz_0_locked  [get_bd_pins clk_wiz_0/locked] \
   [get_bd_pins proc_sys_reset_0/dcm_locked] \
   [get_bd_pins ilvector_logic_0/Op1]
@@ -782,8 +782,8 @@ proc create_root_design { parentCell } {
   [get_bd_ports uart0_txd_o_0]
   connect_bd_net -net proc_sys_reset_0_peripheral_aresetn  [get_bd_pins proc_sys_reset_0/peripheral_aresetn] \
   [get_bd_pins smartconnect_0/aresetn] \
-  [get_bd_pins neorv32_vivado_ip_0/resetn] \
-  [get_bd_pins Pong_base_0/s_axi_aresetn]
+  [get_bd_pins Pong_base_0/s_axi_aresetn] \
+  [get_bd_pins neorv32_vivado_ip_0/resetn]
   connect_bd_net -net proc_sys_reset_1_peripheral_aresetn  [get_bd_pins proc_sys_reset_1/peripheral_aresetn] \
   [get_bd_pins mig_7series_0/aresetn]
   connect_bd_net -net resetn_0_1  [get_bd_ports resetn_0] \
