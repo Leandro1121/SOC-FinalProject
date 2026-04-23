@@ -30,6 +30,19 @@ int main( void )
     // Setup UART0 at default baud rate, no interrupts
     neorv32_uart0_setup(UART_BAUD_RATE, 0);
 
+    neorv32_uart0_puts("\nCRYPTO\n");
+
+    // TRNG Setup 
+    if (neorv32_trng_available()) {
+		neorv32_trng_enable();
+		neorv32_aux_delay_ms(neorv32_sysinfo_get_clk(), 100);
+		neorv32_trng_fifo_clear();
+		neorv32_uart0_puts("TRNG OK\n");
+        trng_get_block128(aes_k);
+	} else {
+		neorv32_uart0_puts("TRNG NO\n");
+	}
+
     // check if UART0 is implemented at all
     if(neorv32_uart0_available() == 0)
         return -1; 

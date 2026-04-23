@@ -14,6 +14,10 @@
 #include <unistd.h>
 #include <stdint.h>
 
+/* Crypto includes */
+#include "aes_isa.h"
+#include "crypto_utils.h"
+#include "trng.h"
 
 /* Platform UART configuration */
 #define UART_BAUD_RATE (19200)         // transmission speed
@@ -35,5 +39,7 @@
 #define P2_DN (1u << 2)
 #define P2_UP (1u << 3)
 #define START (1u << 4)
+
+extern uint8_t aes_k[16], aes_hw_ct[16], aes_dec[16], aes_p[16];
 
 #endif

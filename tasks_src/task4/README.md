@@ -15,8 +15,6 @@ Before building, ensure the following are installed and configured on your syste
 
 ---
 
-## Getting Started
-
 ### 1. Clone and Initialize Submodules
 
 FreeRTOS is included as a Git submodule. After cloning the repository, run:
@@ -105,27 +103,32 @@ The DDR3 system reset is gated by the Clocking Wizard's `locked` signal — the 
 ## Project Structure
 
 ```
-task2_3/
-├── build/                          # Compiled output
+task4/
+├── build/
 ├── lib/
-│   ├── inc/                        # Header files
-│   │   ├── ddr3_mem.h              # DDR3 memory interface declarations
-│   │   ├── freertos_neo_hooks.h    # FreeRTOS hook function declarations
-│   │   ├── freertos_neo_interrupts.h  # Interrupt handler declarations
-│   │   ├── freertos_neo_tasks.h    # Task declarations
-│   │   ├── FreeRTOSConfig.h        # FreeRTOS kernel configuration
-│   │   └── project_constants.h     # Shared project-wide constants
-│   └── src/                        # Library source files
-│       ├── ddr3_mem.c              # DDR3 memory interface implementation
-│       ├── freertos_neo_hooks.c    # FreeRTOS hook implementations
-│       ├── freertos_neo_interrupts.c  # Interrupt handlers
-│       ├── freertos_neo_tasks.c    # FreeRTOS task implementations
-│       └── project_constants.c     # Constants definitions
-├── src/
-│   └── main.c                      # Application entry point
-├── main.elf                        # Compiled ELF binary
-├── Makefile                        # Build system
-├── neorv32_imem_image.vhd          # NEORV32 IMEM initialisation image
+│  ├── inc/
+│  │   ├── aes_cfs.h
+│  │   ├── crypto_utils.h
+│  │   ├── ddr3_mem.h
+│  │   ├── freertos_neo_hooks.h
+│  │   ├── freertos_neo_interrupts.h
+│  │   ├── freertos_neo_tasks.h
+│  │   ├── FreeRTOSConfig.h
+│  │   ├── project_constants.h
+│  │   └── trng.h
+│  └── src/
+│      ├── aes_cfs.c
+│      ├── crypto_utils.c
+│      ├── ddr3_mem.c
+│      ├── freertos_neo_hooks.c
+│      ├── freertos_neo_interrupts.c
+│      ├── freertos_neo_tasks.c
+│      ├── project_constants.c
+│      └── trng.c
+└── src/
+|   └── main.c
+|
+├── Makefile
 └── README.md
 ```
 

@@ -5,7 +5,7 @@
 RISCV_PREFIX ?= riscv32-unknown-elf-
 
 # Additional sources
-APP_SRC += $(wildcard ./src/*.c) $(wildcard ./lib/src/*.c)
+APP_SRC += $(wildcard ./src/*.c) $(wildcard ./lib/src/*.c) ./lib/src/aes_isa.S
 APP_INC += -I ./lib/inc
 
 # ----------------------------------------------------------------------------
@@ -40,7 +40,7 @@ APP_INC += -I $(FREERTOS_HOME)/portable/GCC/RISC-V/chip_specific_extensions/RV32
 ASM_INC += -I $(FREERTOS_HOME)/portable/GCC/RISC-V/chip_specific_extensions/RV32I_CLINT_no_extensions
 
 # Override the default CPU ISA
-MARCH = rv32i_zicsr_zifencei
+MARCH = rv32i_zicsr_zifencei_zkne_zknd_zbkx_zbkb
 MABI  = ilp32
 
 # Override default optimization goal

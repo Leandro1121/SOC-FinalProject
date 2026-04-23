@@ -17,6 +17,7 @@ void prvButtonTask(void *pvParameters) {
 
             // *********** Button Press or release actions here  ********* //
             // Button Actions here 
+            neorv32_uart0_printf("===========================\n");
             neorv32_uart_printf(UART_HW_HANDLE,
                 "Pin %u: %s\n",
                 event.pin,
@@ -33,12 +34,22 @@ void prvButtonTask(void *pvParameters) {
             if (buttons & 0x08u) pong_cmd |= P2_UP;
             if (buttons & 0x10u) pong_cmd |= START;
 
-            uint32_t started = (pong_cmd & START) ? 1u : 0u;
-
             neorv32_cpu_store_unsigned_word(PONG_IP_BASE + 0x0u, pong_cmd);
 
-            // Send through SPI?
+            aes_p[0] = (uint8_t)(pong_cmd & 0x0Fu);  // mask bottom 4 bits
 
+            // Encrypt Command
+            if (neorv32_trng_available()) {
+                
+                aes128_encrypt_isa(aes_k, aes_p, aes_hw_ct);
+                // TODO : Send over SPI
+                // OTher controller would be responsible for decrypting and processing the command
+                // aes128_decrypt_isa(aes_k, aes_hw_ct, aes_dec);
+                
+                // neorv32_uart0_puts(eq16(aes_dec, aes_p)   ? "A-DC PASS\n" : "A-DC FAIL\n");
+            }
+            
+            neorv32_uart0_printf("===========================\n");
             // *********************************************************** // 
             neorv32_gpio_irq_setup(
                 event.pin, 
