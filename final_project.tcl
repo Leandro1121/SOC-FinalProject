@@ -616,7 +616,7 @@ proc create_root_design { parentCell } {
     CONFIG.ICACHE_NUM_BLOCKS {256} \
     CONFIG.IMEM_EN {true} \
     CONFIG.IMEM_SIZE {32768} \
-    CONFIG.IO_CFS_EN {true} \
+    CONFIG.IO_CFS_EN {false} \
     CONFIG.IO_CLINT_EN {true} \
     CONFIG.IO_DMA_EN {false} \
     CONFIG.IO_GPIO_DIR_EN {false} \
@@ -626,6 +626,7 @@ proc create_root_design { parentCell } {
     CONFIG.IO_GPTMR_EN {true} \
     CONFIG.IO_NEOLED_EN {false} \
     CONFIG.IO_SPI_EN {false} \
+    CONFIG.IO_TRNG_EN {true} \
     CONFIG.IO_UART0_EN {true} \
     CONFIG.IO_UART0_RX_FIFO {1024} \
     CONFIG.IO_UART0_TX_FIFO {256} \
